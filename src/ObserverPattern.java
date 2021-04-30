@@ -1,88 +1,94 @@
-import java.util.ArrayList;
+import java.util.*;
 
 public class ObserverPattern {
 	public static void main(String[] args) {
-		Information information =new Information();
+		Store store =new Store();
 		
-		User userA =new User("A",information);
-		User userB =new User("B",information);
+		User userA =new User("A");
+		User userB =new User("B");
 		
-		information.sendChange("hello!!");
+		store.addObserver(userA);
+		store.addObserver(userB);
+		
+		store.sendChange("特賣1");
+		
+		store.rmoveObserver(userB); //B不訂閱
+		
+		store.sendChange("特賣2");
     }
-}
-
-interface Observer{
-	public void updata(String data); //當data改變時 傳送給User
-}
-
-interface DisplayElement{
-	public void display(); //User顯示資料呼叫這個方法
 }
 
 interface Subject {
-	public void registerObserver(Observer o);
-	public void rmoveObserver(Observer o);
-	public void notifyObservers();
+    public void addObserver(Observer o);
+    public void rmoveObserver(Observer o);
+    public void notifyObservers();
 }
 
-class Information implements Subject{
-	private ArrayList observers;
+interface Observer{
+    public void showdata(String data); 
+    
+    public void setdata(String data); 
+}
+
+
+class Store implements Subject{
+	 private ArrayList observers;
+     private String data;
+     
+     public Store() {
+         observers =new ArrayList();
+     }
+     
+     @Override
+     public void addObserver(Observer o) { //註冊時user時 加到ArrayList後面
+         observers.add(o);
+     }
+     
+     @Override
+     public void rmoveObserver(Observer o) { //user想取消 從ArrayList刪除
+         int i =observers.indexOf(o);
+         if(i>=0) {
+             observers.remove(i);
+         }
+     }
+     
+     @Override
+     public void notifyObservers() {  
+         for(int i=0;i < observers.size();i++) {
+             Observer observer =(Observer)observers.get(i);
+             observer.showdata(data);
+         }
+     }
+     
+     public void sendChange(String data) { //商家更新情報通知user
+    	 this.data=data;
+    	 for(int i=0;i < observers.size();i++) {
+             Observer observer =(Observer)observers.get(i);
+             observer.setdata(data);
+         }
+         notifyObservers();
+     } 
+}
+
+
+class User implements Observer{
+    private String name;
     private String data;
-    
-    public Information() {
-    	observers =new ArrayList();
+  
+    public User(String name) {
+        this.name= name;
+    }	
+      
+    @Override
+    public void showdata(String data) {
+    	System.out.println("通知使用者"+name+":"+data);
     }
-    
-    @Override
-    public void registerObserver(Observer o) { //註冊時user時 加到ArrayList後面
-    	observers.add(o);
-    }
-    
-    @Override
-	public void rmoveObserver(Observer o) { //user想取消 從ArrayList刪除
-		int i =observers.indexOf(o);
-		if(i>=0) {
-			observers.remove(i);
-		}
-	}
-	
-    @Override
-	public void notifyObservers() {  
-		for(int i=0;i < observers.size();i++) {
-			Observer observer =(Observer)observers.get(i);
-			observer.updata(data);
-		}
-	}
-	
-	public void sendChange() { //商家更新情報通知user
-		notifyObservers();
-	}
-	
-	public void sendChange(String data) {
-		this.data =data;
-		sendChange();
-	}
+
+	@Override
+	public void setdata(String data) {
+		this.data= data;
+	}      
 }
 
-class User implements Observer, DisplayElement{
-	private String name;
-	private Subject information;
-	private String  data;
-  
-	public User(String name ,Subject information) {
-		this.name = name;
-		this.information = information;
-		information.registerObserver(this);
-	}	
-  	
-	@Override
-	public void updata(String data) {
-		this.data = data;
-		display();
-	}
-  	
-  	@Override
-  	public void display() {
-  		System.out.println("使用者:"+name+"得到情報:"+data);
-  	}
-}
+
+
