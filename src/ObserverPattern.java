@@ -1,5 +1,7 @@
 import java.util.*;
-
+/*
+ * 觀察者模式
+ */
 public class ObserverPattern {
 	public static void main(String[] args) {
 		Store store =new Store();
